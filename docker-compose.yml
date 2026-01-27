@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:16
+    container_name: django_library_front_db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-django_library_front}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5433:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web_dev:
+    build: .
+    container_name: django_library_front_dev
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: python manage.py runserver 0.0.0.0:8000
+
+  web_prod:
+    build: .
+    container_name: django_library_front_prod
+    env_file:
+      - .env
+    depends_on:
+      - db
+    ports:
+      - "8001:8000"
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 120
+
+volumes:
+  postgres_data:
