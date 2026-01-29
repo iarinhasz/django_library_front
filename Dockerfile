@@ -1,19 +1,15 @@
-FROM python:3.12-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+FROM node:22-alpine
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Copia apenas os manifests primeiro (cache)
+COPY package*.json ./
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN npm install
 
-# Copia o projeto
-COPY . /app
+# Copia o restante do projeto
+COPY . .
 
-EXPOSE 8000
+EXPOSE 5173
+
+CMD ["npm", "run", "dev"]
